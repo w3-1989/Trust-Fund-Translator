@@ -35,22 +35,23 @@ export default function DrawingRoom() {
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    if (!text.trim() || loading || isTyping) return;
+    const message = text.trim();
+    if (!message || loading || isTyping) return;
 
+    // Clear the box straight away
+    setText("");
     setLoading(true);
     setError("");
     setResponse("");
     setCount(0);
 
     try {
-      const result = await translate(text);
+      const result = await translate(message);
       setResponse(result);
-      setText("");
     } catch (err) {
       console.error(err);
-      setError(
-        err instanceof Error ? err.message : "The butler has dropped the tray.",
-      );
+      setText(message); // give their text back so they can try again
+      setError("The butler has dropped the tray. Do try again.");
     } finally {
       setLoading(false);
     }
@@ -94,19 +95,19 @@ export default function DrawingRoom() {
       {/* Main */}
       <main className="relative z-10 flex w-full max-w-[710px] flex-1 flex-col justify-center px-4 py-6 md:mt-24 md:flex-none md:px-6 md:py-0">
         <div className="flex flex-col">
-          {/* Response area: fleur + text side by side */}
+          {/* Response area: fleur above text on mobile, beside it on desktop */}
           <div
             ref={scrollRef}
             className="h-[240px] overflow-y-auto py-6 md:h-[300px]"
           >
-            <div className="flex items-start gap-3 md:gap-4">
+            <div className="flex flex-col items-center gap-3 md:flex-row md:items-start md:gap-4">
               <img
                 src={fleur}
                 alt=""
                 className="w-7 shrink-0 select-none pointer-events-none ghost-float md:w-8"
               />
 
-              <div className="flex-1 pt-1 font-cormorant text-[15px] font-light leading-relaxed md:text-[12px]">
+              <div className="w-full flex-1 font-cormorant text-[15px] font-light leading-relaxed md:pt-1 md:text-[12px]">
                 {loading && (
                   <p className="italic opacity-70">
                     One moment, the butler is consulting the thesaurus…
