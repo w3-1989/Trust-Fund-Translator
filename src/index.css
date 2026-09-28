@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap");
+@import url("https://use.typekit.net/rpu2zci.css");
+
+@import "tailwindcss";
+
+@theme {
+  --font-cinzel: "Cinzel Decorative", serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --font-tiro: "tiro-bangla", sans-serif;
+}
+
+.cinzel-decorative-regular { font-family: "Cinzel Decorative", serif; font-weight: 400; font-style: normal; }
+.cinzel-decorative-bold    { font-family: "Cinzel Decorative", serif; font-weight: 700; font-style: normal; }
+.cinzel-decorative-black   { font-family: "Cinzel Decorative", serif; font-weight: 900; font-style: normal; }
+
+.tiro-bangla-regular { font-family: "tiro-bangla", sans-serif; font-weight: 400; font-style: normal; }
+.tiro-bangla-italic  { font-family: "tiro-bangla", sans-serif; font-weight: 400; font-style: italic; }
+
+.fancy {
+  font-family: var(--font-cormorant);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 20px;
+}
+
+@keyframes ghost-float {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+  }
+}
+
+.ghost-float {
+  animation: ghost-float 4s ease-in-out infinite;
+}
