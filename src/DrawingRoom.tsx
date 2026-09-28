@@ -107,20 +107,21 @@ export default function DrawingRoom() {
                 className="w-7 shrink-0 select-none pointer-events-none ghost-float md:w-8"
               />
 
-              <div className="w-full flex-1 font-cormorant text-[15px] font-light leading-relaxed md:pt-1 md:text-[12px]">
+              <div className="w-full flex-1 font-cormorant text-[14px] font-light leading-relaxed text-center md:pt-1 md:text-[12px] md:text-left">
+                {" "}
                 {loading && (
                   <p className="italic opacity-70">
                     One moment, the butler is consulting the thesaurus…
                   </p>
                 )}
-
                 {error && <p className="italic text-[#F2B8B8]">{error}</p>}
-
                 {!loading && displayed && (
                   <p className="whitespace-pre-wrap">
                     {displayed}
                     {isTyping && (
-                      <span className="ml-0.5 inline-block animate-pulse">|</span>
+                      <span className="ml-0.5 inline-block animate-pulse">
+                        |
+                      </span>
                     )}
                   </p>
                 )}
