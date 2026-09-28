@@ -1,30 +1,56 @@
-import { useState, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { Link } from "react-router";
 import { ArrowUp, Copy, Check } from "lucide-react";
 import ornament from "./assets/ornament.svg";
 import fleur from "./assets/fleur.svg";
 import { translate } from "./lib/translate";
 
+const TYPE_SPEED = 25; // ms per character: lower is faster
+
 export default function DrawingRoom() {
   const [text, setText] = useState("");
   const [response, setResponse] = useState("");
+  const [count, setCount] = useState(0);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Derived, not stored
+  const displayed = response.slice(0, count);
+  const isTyping = count < response.length;
+
+  // Typewriter: adds one character each tick until done
+  useEffect(() => {
+    if (count >= response.length) return;
+    const id = setTimeout(() => setCount((c) => c + 1), TYPE_SPEED);
+    return () => clearTimeout(id);
+  }, [count, response]);
+
+  // Keep the newest text in view while typing
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [count]);
+
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    if (!text.trim() || loading) return;
+    if (!text.trim() || loading || isTyping) return;
 
     setLoading(true);
     setError("");
+    setResponse("");
+    setCount(0);
 
     try {
       const result = await translate(text);
       setResponse(result);
       setText("");
-    } catch {
-      setError("The butler has dropped the tray. Do try again.");
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error ? err.message : "The butler has dropped the tray.",
+      );
     } finally {
       setLoading(false);
     }
@@ -68,22 +94,34 @@ export default function DrawingRoom() {
       {/* Main */}
       <main className="relative z-10 w-full max-w-[710px] px-6 mt-24">
         <div className="flex flex-col">
-          {/* Fleur-de-lis */}
-          <img
-            src={fleur}
-            alt=""
-            className="w-8 self-start select-none pointer-events-none ghost-float"
-          />
+          {/* Response area: fleur + text side by side */}
+          <div ref={scrollRef} className="h-[300px] overflow-y-auto py-6">
+            <div className="flex items-start gap-4">
+              <img
+                src={fleur}
+                alt=""
+                className="w-8 shrink-0 select-none pointer-events-none ghost-float"
+              />
 
-          {/* Response area */}
-          <div className="h-[300px] overflow-y-auto py-6 font-cormorant text-[18px] font-light leading-relaxed">
-            {loading && (
-              <p className="italic opacity-70">
-                One moment, the butler is consulting the thesaurus…
-              </p>
-            )}
-            {error && <p className="italic text-[#F2B8B8]">{error}</p>}
-            {!loading && response && <p>{response}</p>}
+              <div className="flex-1 pt-1 font-cormorant text-[12px] font-light leading-relaxed">
+                {loading && (
+                  <p className="italic opacity-70">
+                    One moment, the butler is consulting the thesaurus…
+                  </p>
+                )}
+
+                {error && <p className="italic text-[#F2B8B8]">{error}</p>}
+
+                {!loading && displayed && (
+                  <p className="whitespace-pre-wrap">
+                    {displayed}
+                    {isTyping && (
+                      <span className="ml-0.5 inline-block animate-pulse">|</span>
+                    )}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Input box */}
@@ -107,7 +145,7 @@ export default function DrawingRoom() {
               <button
                 type="button"
                 onClick={handleCopy}
-                disabled={!response}
+                disabled={!response || isTyping}
                 className="flex h-10 w-10 items-center justify-center border border-[#3A1015]/20 hover:bg-[#3A1015]/5 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Copy translation"
               >
@@ -117,11 +155,20 @@ export default function DrawingRoom() {
               {/* Send */}
               <button
                 type="submit"
-                disabled={!text.trim() || loading}
-                className="flex h-10 w-10 items-center justify-center bg-[#8E2A33] text-[#F5EDE3] hover:brightness-110 transition cursor-pointer disabled:opacity-50"
-                aria-label="Translate"
+                disabled={!text.trim() || loading || isTyping}
+                className="flex h-10 w-10 items-center justify-center bg-[#8E2A33] text-[#F5EDE3] hover:brightness-110 transition cursor-pointer disabled:cursor-not-allowed [&:disabled:not([aria-busy=true])]:opacity-50"
+                aria-label={loading ? "Translating" : "Translate"}
+                aria-busy={loading}
               >
-                <ArrowUp size={18} />
+                {loading ? (
+                  <span className="dot-wave flex items-center gap-[3px]">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                ) : (
+                  <ArrowUp size={18} />
+                )}
               </button>
             </div>
           </form>
